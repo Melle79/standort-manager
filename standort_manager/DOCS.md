@@ -34,6 +34,11 @@ Unter **Geräte** legst du je Gerät die Betriebsart fest:
 | Nur beobachten | Wird mitgelesen, wenn ohnehin abgefragt wird — kein eigener Takt |
 | Inaktiv | Wird vollständig übersprungen |
 
+Die Liste ist zusammengeklappt; ein Klick auf ein Gerät öffnet seine
+Einstellungen. Der Punkt vor dem Namen zeigt die Betriebsart, ohne dass du
+aufklappen musst: grün für Verfolgen, gelb für Nur beobachten, ein leerer
+Ring für Inaktiv.
+
 Stell alles auf **Inaktiv**, was du nicht brauchst. Ein Apple-Konto bringt
 schnell zwei Dutzend Geräte mit, darunter AirPods, Uhren und Rechner. Jedes
 verfolgte Gerät kostet Akku und reizt Apples Sperren.
@@ -150,6 +155,10 @@ title: Geräte
 columns: 2
 show_address: true
 ```
+
+Einstellen lässt sich das auch ohne YAML: Die Karte bringt einen visuellen
+Editor mit. Im Dashboard auf **Karte bearbeiten** — dort stehen Überschrift,
+Spaltenzahl, Adressanzeige und die Geräteauswahl.
 
 Ohne `entities` zeigt sie alle verfolgten Geräte und wächst mit. Mit
 `entities` wählst du einzelne aus:

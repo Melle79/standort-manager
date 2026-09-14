@@ -30,7 +30,8 @@ Fahrzeiten, Befehle an die Geräte und eine Dashboard-Karte.
 
 * Ton abspielen, Nachricht auf den Sperrbildschirm, Verloren-Modus
 * Schaltflächen und ein Schalter in Home Assistant, aus Automationen nutzbar
-* Dashboard-Karte, die das Add-on selbst mitbringt und anmeldet
+* Dashboard-Karte, die das Add-on selbst mitbringt und anmeldet — mit
+  visuellem Editor, ohne YAML
 
 **Sprache**
 
@@ -88,8 +89,13 @@ python3 tests/test_logik.py           # Zonen, Zustände, Abfragetakte
 python3 tests/test_mqtt.py            # Discovery, Entitäts-IDs, Sprachwechsel
 ```
 
-Die Tests brauchen `cryptography` und laufen ohne Netz, ohne Apple-Konto und
-ohne Home Assistant — alle äußeren Dienste sind durch Attrappen ersetzt.
+Die Tests laufen ohne Netz, ohne Apple-Konto und ohne Home Assistant — alle
+äußeren Dienste sind durch Attrappen ersetzt. Die Module des Add-ons werden
+dabei aber wirklich importiert, deshalb braucht es deren Abhängigkeiten:
+
+```bash
+pip install cryptography flask paho-mqtt requests pyicloud rich
+```
 
 `check_translations.py` meldet Schlüssel, die im Code benutzt, aber nicht
 übersetzt sind, Lücken zwischen den Sprachen und Platzhalter, die sich
@@ -120,9 +126,8 @@ standort_manager/
 
 MIT — siehe [LICENSE](LICENSE).
 
-Dieses Projekt ist eigenständig und es benutzt
-[pyicloud](https://github.com/timlaing/pyicloud) für den Zugriff auf Apples
-Ortungsdienst. Die Adressauflösung nutzt
+Das Projekt ist eigenständig. Für den Zugriff auf Apples Ortungsdienst benutzt
+es [pyicloud](https://github.com/timlaing/pyicloud). Die Adressauflösung nutzt
 [Nominatim](https://nominatim.openstreetmap.org/), die Routenberechnung
 [OSRM](https://project-osrm.org/) — beide nur im Rahmen ihrer
 Nutzungsbedingungen für den privaten Gebrauch.

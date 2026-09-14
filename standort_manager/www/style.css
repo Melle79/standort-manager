@@ -228,13 +228,56 @@ input[type="number"], select {
 
 /* --- Geräte, Zonen, Protokoll ----------------------------------------- */
 
+/* Gerätekarten: zugeklappt zeigen sie Punkt, Name und Modell */
+
+.geraet-karte { padding: 0; }
+.geraet-karte > *:not(summary) { padding: 0 16px; }
+.geraet-karte > *:last-child { padding-bottom: 16px; }
+
 .geraet-kopf {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 12px;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
 }
+.geraet-kopf::-webkit-details-marker { display: none; }
+.geraet-karte[open] .geraet-kopf { border-bottom: 1px solid var(--rahmen); }
+.geraet-kopf:hover { background: var(--hintergrund); }
+
+.geraet-name { flex: 1; }
+
+/* Der Punkt beantwortet die Frage "wird das Gerät verfolgt?" ohne Aufklappen */
+.betriebspunkt {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--text-still);
+}
+.betriebspunkt.modus-track { background: var(--gruen); }
+.betriebspunkt.modus-monitor { background: var(--gelb); }
+.betriebspunkt.modus-inactive {
+  background: none;
+  border: 2px solid var(--rahmen);
+  width: 8px;
+  height: 8px;
+}
+
+/* Der Pfeil zeigt, dass sich die Karte öffnen lässt */
+.geraet-kopf::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--text-still);
+  border-bottom: 2px solid var(--text-still);
+  transform: rotate(-45deg);
+  margin-left: 2px;
+  transition: transform .15s;
+}
+.geraet-karte[open] .geraet-kopf::after { transform: rotate(45deg); }
 .modell { color: var(--text-still); font-size: 12px; }
 .feld { margin-bottom: 8px; }
 .feld .hinweis { margin-top: -8px; }

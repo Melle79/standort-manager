@@ -105,7 +105,9 @@
       "reference_zone_hint": "Besides home, distance and arrival are calculated for this zone – a school, for instance.",
       "timezone_offset": "Time offset",
       "timezone_offset_hint": "Hours relative to Home Assistant's time. For devices in another time zone – local time then appears as its own sensor.",
-      "timezone_none": "none"
+      "timezone_none": "none",
+      "expand": "Expand",
+      "collapse": "Collapse"
     },
     "zone": {
       "title": "Zones",

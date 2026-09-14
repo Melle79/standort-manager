@@ -13,6 +13,8 @@ const Zustand = {
   einstellungen: null,
   ansicht: 'uebersicht',
   kontoHinzufuegen: false,
+  // Welche Gerätekarten offen sind - damit ein Neuzeichnen sie nicht zuklappt.
+  offeneGeraete: new Set(),
   timer: null,
 };
 
@@ -370,10 +372,22 @@ async function zeichneGeraete() {
   });
 
   for (const geraet of sortiert) {
-    const karte = el('div', 'karte geraet-karte');
+    // Zusammenklappbar: Bei zwei Dutzend Geräten im Konto ist die
+    // aufgeklappte Liste unbenutzbar lang. Zugeklappt genügen Punkt, Name
+    // und Modell, um das gesuchte Gerät zu finden.
+    const karte = el('details', 'karte geraet-karte');
+    karte.open = Zustand.offeneGeraete.has(geraet.id);
+    karte.addEventListener('toggle', () => {
+      if (karte.open) Zustand.offeneGeraete.add(geraet.id);
+      else Zustand.offeneGeraete.delete(geraet.id);
+    });
 
-    const kopf = el('div', 'geraet-kopf');
-    kopf.appendChild(el('strong', null, geraet.name));
+    const kopf = el('summary', 'geraet-kopf');
+    // Der Punkt zeigt die Betriebsart, ohne dass man aufklappen muss.
+    const punkt = el('span', `betriebspunkt modus-${geraet.config.modus}`);
+    punkt.title = I18n.t(`device.mode_${geraet.config.modus}`);
+    kopf.appendChild(punkt);
+    kopf.appendChild(el('strong', 'geraet-name', geraet.name));
     kopf.appendChild(el('span', 'modell', geraet.model || ''));
     karte.appendChild(kopf);
 

@@ -1,5 +1,19 @@
 # Änderungsverlauf
 
+## 0.4.0 – 14.09.2026
+
+* **Geräteliste zusammenklappbar.** Bei zwei Dutzend Geräten im Konto war die
+  aufgeklappte Liste unbenutzbar lang. Ein Punkt vor dem Namen zeigt die
+  Betriebsart, ohne dass man aufklappen muss: grün für Verfolgen, gelb für
+  Nur beobachten, ein leerer Ring für Inaktiv.
+* **Visueller Editor für die Dashboard-Karte.** Überschrift, Spaltenzahl,
+  Adressanzeige und Geräteauswahl lassen sich im Dashboard einstellen, ohne
+  YAML zu schreiben. Die Karte verwies schon auf einen Editor, den es nicht
+  gab — „Karte bearbeiten" endete deshalb mit einem Fehler.
+* **Karte und Editor liegen jetzt im Shadow DOM.** Ihre Klassennamen waren
+  global und konnten andere Karten desselben Dashboards stören — im eigenen
+  Editor tat eine fremde `.zeile`-Regel das prompt.
+
 ## 0.3.1 – 14.09.2026
 
 * Der Hinweis auf Waze ist aus den Einstellungen verschwunden. Dass ein
