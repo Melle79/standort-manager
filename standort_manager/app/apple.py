@@ -11,6 +11,7 @@ verhindert, dass die Oberfläche gleichzeitig eine Anmeldung anstößt.
 """
 
 import logging
+import re
 import threading
 import time
 
@@ -28,6 +29,24 @@ from events import events
 from store import SESSION_DIR, store
 
 log = logging.getLogger("standort.apple")
+
+# Apple antwortet im Fehlerfall gern mit einer ganzen HTML-Seite. Die steht
+# dann im Protokoll und macht es unlesbar - also nur den Klartext behalten.
+_HTML = re.compile(r"<[^>]*>|&[a-z]+;", re.S)
+_LEERRAUM = re.compile(r"\s+")
+
+
+def _klartext(fehler, grenze: int = 140) -> str:
+    """Eine Fehlermeldung auf das Lesbare eindampfen."""
+    text = _LEERRAUM.sub(" ", _HTML.sub(" ", str(fehler))).strip()
+    # Was vor dem ersten HTML-Brocken stand, ist meist die eigentliche
+    # Aussage - alles danach nur Seitengeruest.
+    text = text.split("  ")[0].strip() or text
+    # Fehlerseiten wiederholen ihre Aussage gern in Titel und Ueberschrift.
+    haelfte = len(text) // 2
+    if haelfte > 8 and text[:haelfte].strip() == text[haelfte:].strip():
+        text = text[:haelfte].strip()
+    return text[:grenze].rstrip(" ,;:") or "?"
 
 # Zustände, die die Oberfläche unterscheidet.
 STATE_LOGGED_OUT = "logged_out"
@@ -98,7 +117,7 @@ class AppleAccount:
                 self.error_key = "error.bad_credentials"
                 if not from_restore:
                     events.add("event.login_failed", "error", user=username,
-                               reason=str(err)[:200])
+                               reason=_klartext(err))
                 return self.status()
             except (PyiCloud2FARequiredException, PyiCloud2SARequiredException):
                 # pyicloud legt das Objekt trotzdem an – für den Codeschritt
@@ -123,7 +142,7 @@ class AppleAccount:
                 self.state = STATE_ERROR
                 self.error_key = "error.apple_unavailable"
                 events.add("event.login_failed", "error", user=username,
-                           reason=str(err)[:200])
+                           reason=_klartext(err))
                 return self.status()
 
             self._api = api
@@ -154,7 +173,7 @@ class AppleAccount:
             except PyiCloudAPIResponseException as err:
                 self.error_key = "error.apple_unavailable"
                 events.add("event.login_failed", "error",
-                           user=self.username or "", reason=str(err)[:200])
+                           user=self.username or "", reason=_klartext(err))
                 return self.status()
 
             if not ok:
@@ -231,7 +250,7 @@ class AppleAccount:
             except PyiCloudServiceNotActivatedException as err:
                 self.state = STATE_ERROR
                 self.error_key = "error.apple_unavailable"
-                events.add("event.poll_failed", "error", reason=str(err)[:200])
+                events.add("event.poll_failed", "error", reason=_klartext(err))
                 return []
             except PyiCloudAPIResponseException as err:
                 # 503 und 450 bedeuten in der Praxis: zu oft gefragt.
@@ -244,7 +263,7 @@ class AppleAccount:
                     events.add("event.poll_failed", "error", reason=text[:200])
                 return []
             except Exception as err:  # noqa: BLE001 – der Thread muss leben
-                events.add("event.poll_failed", "error", reason=str(err)[:200])
+                events.add("event.poll_failed", "error", reason=_klartext(err))
                 return []
 
             for eintrag in geraete:
@@ -307,10 +326,10 @@ class AppleAccount:
                 return {"ok": False, "error_key": "error.command_unavailable"}
             except PyiCloudAPIResponseException as err:
                 return {"ok": False, "error_key": "error.apple_unavailable",
-                        "detail": str(err)[:200]}
+                        "detail": _klartext(err)}
             except Exception as err:  # noqa: BLE001
                 return {"ok": False, "error_key": "error.generic",
-                        "detail": str(err)[:200]}
+                        "detail": _klartext(err)}
             return {"ok": True, "command": name}
 
     # ---------------------------------------------------------------- Status

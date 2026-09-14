@@ -1,5 +1,18 @@
 # Änderungsverlauf
 
+## 0.5.0 – 14.09.2026
+
+* **Die Zonen-Ansicht kann jetzt, was sie versprach.** Dort stand „Hier legst
+  du fest, zu welchen die Entfernung berechnet wird" — festlegen ließ sich
+  aber nichts. Jetzt lässt sich jede Zone einzeln ein- und ausschalten; eine
+  abgeschaltete zählt nicht mehr als Aufenthaltsort. Die Heimzone bleibt fest.
+  Die Liste zeigt außerdem, wer gerade in welcher Zone ist.
+* **Das Protokoll nannte Geräte bei ihrer Apple-ID.** „Einstellung
+  AWmmXT9RPCh6V0j8hZd/… geändert" statt des Gerätenamens.
+* **Fehlermeldungen von Apple kamen als rohes HTML ins Protokoll** und
+  machten es unlesbar. Sie werden jetzt auf ihre Aussage eingedampft: aus
+  einer halben Webseite wird „Authentication required for Account (409)".
+
 ## 0.4.0 – 14.09.2026
 
 * **Geräteliste zusammenklappbar.** Bei zwei Dutzend Geräten im Konto war die

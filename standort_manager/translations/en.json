@@ -111,7 +111,7 @@
     },
     "zone": {
       "title": "Zones",
-      "intro": "Zones come from Home Assistant. Pick the ones you want distances for.",
+      "intro": "Zones come from Home Assistant. Choose which ones the add-on takes into account.",
       "home": "Home",
       "away": "Away",
       "name": "Name",
@@ -119,7 +119,13 @@
       "track_distance": "Calculate distance",
       "no_zones": "No zones found in Home Assistant.",
       "passthrough": "Pass-through",
-      "passthrough_hint": "Briefly clipping a zone does not count as an arrival."
+      "passthrough_hint": "Briefly clipping a zone does not count as an arrival.",
+      "active": "Take into account",
+      "inactive_hint": "Zones that are off are not counted as a location – devices there are treated as away.",
+      "home_fixed": "The home zone cannot be turned off.",
+      "occupants": "{count} here",
+      "empty": "empty",
+      "radius_label": "Radius {radius}"
     },
     "state": {
       "home": "Home",

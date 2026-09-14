@@ -23,6 +23,7 @@ Fahrzeiten, Befehle an die Geräte und eine Dashboard-Karte.
   bei Annäherung an eine Zone dichter
 * Zwei Quellen je Gerät: iCloud und — wo installiert — der Tracker der
   Home-Assistant-Companion-App, die Zonenwechsel schneller meldet
+* Zonen einzeln ein- und ausschaltbar; die Liste zeigt, wer gerade wo ist
 * Eine zweite Bezugszone je Gerät neben dem Zuhause, etwa die Schule
 * Mehrere Apple-Konten, wenn die Familie auf mehr als eine Apple-ID verteilt ist
 

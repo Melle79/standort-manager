@@ -419,9 +419,16 @@ class Tracker:
         Kleinste gewinnt, damit eine Zone innerhalb einer größeren – etwa
         das Büro im Ort – die gröbere schlägt.
         """
+        abgeschaltet = store.get("zonen", default={}) or {}
         treffer = []
         for zone in self.zones:
             if zone.get("passive"):
+                continue
+            # Abgeschaltete Zonen zählen nicht als Aufenthaltsort. Die
+            # Heimzone bleibt immer an - ohne sie hätte "zuhause" keine
+            # Bedeutung mehr.
+            if (zone["entity_id"] != "zone.home"
+                    and abgeschaltet.get(zone["entity_id"], {}).get("aktiv") is False):
                 continue
             d = distance_m(lat, lon, zone["latitude"], zone["longitude"])
             if d <= zone.get("radius", 100):

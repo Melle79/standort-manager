@@ -111,7 +111,7 @@
     },
     "zone": {
       "title": "Zonen",
-      "intro": "Zonen kommen aus Home Assistant. Hier legst du fest, zu welchen die Entfernung berechnet wird.",
+      "intro": "Zonen kommen aus Home Assistant. Hier legst du fest, welche das Add-on berücksichtigt.",
       "home": "Zuhause",
       "away": "Abwesend",
       "name": "Name",
@@ -119,7 +119,13 @@
       "track_distance": "Entfernung berechnen",
       "no_zones": "Keine Zonen in Home Assistant gefunden.",
       "passthrough": "Durchfahrt",
-      "passthrough_hint": "Kurzes Streifen einer Zone wird nicht als Ankunft gewertet."
+      "passthrough_hint": "Kurzes Streifen einer Zone wird nicht als Ankunft gewertet.",
+      "active": "Berücksichtigen",
+      "inactive_hint": "Abgeschaltete Zonen werden nicht als Aufenthaltsort gewertet – die Geräte gelten dort als abwesend.",
+      "home_fixed": "Die Heimzone lässt sich nicht abschalten.",
+      "occupants": "{count} hier",
+      "empty": "leer",
+      "radius_label": "Radius {radius}"
     },
     "state": {
       "home": "Zuhause",

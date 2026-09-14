@@ -188,7 +188,10 @@ def device_config(device_id):
 
     vorher = store.device(device_id)["modus"]
     store.set_device(device_id, **felder)
-    events.add("event.config_changed", "info", setting=device_id)
+    # Der Gerätename, nicht die Apple-ID: die ist ein Base64-Block und
+    # macht das Protokoll unlesbar.
+    events.add("event.config_changed", "info", device_id=device_id,
+               setting=_geraetename(device_id))
 
     # Von 'track' weg: Entitäten abmelden, sonst bleiben Karteileichen.
     if vorher == "track" and felder.get("modus") in ("inactive", "monitor"):
@@ -300,7 +303,39 @@ def tracking_umschalten():
 
 @app.route("/api/zones")
 def zones():
-    return jsonify(ha.zones(force=request.args.get("force") == "1"))
+    """Zonen aus Home Assistant, ergänzt um unsere eigene Einstellung
+    und darum, wer gerade dort ist."""
+    eigene = store.get("zonen", default={}) or {}
+    belegung = {}
+    for zustand in tracker.snapshot():
+        if zustand.get("zone") and store.device(zustand["id"])["modus"] == "track":
+            belegung.setdefault(zustand["zone"], []).append(zustand["name"])
+
+    out = []
+    for zone in ha.zones(force=request.args.get("force") == "1"):
+        eintrag = dict(zone)
+        eintrag["aktiv"] = (
+            True if zone["entity_id"] == "zone.home"
+            else eigene.get(zone["entity_id"], {}).get("aktiv", True)
+        )
+        eintrag["fixed"] = zone["entity_id"] == "zone.home"
+        eintrag["occupants"] = belegung.get(zone["entity_id"], [])
+        out.append(eintrag)
+    return jsonify(out)
+
+
+@app.route("/api/zones/<path:entity_id>", methods=["POST"])
+def zone_setzen(entity_id):
+    """Eine Zone für die Erkennung ein- oder ausschalten."""
+    if entity_id == "zone.home":
+        return jsonify({"error_key": "zone.home_fixed"}), 400
+    daten = request.get_json(silent=True) or {}
+    store.set("zonen", entity_id, {"aktiv": bool(daten.get("aktiv", True))})
+    name = next((z["name"] for z in ha.zones() if z["entity_id"] == entity_id),
+                entity_id)
+    events.add("event.config_changed", "info", setting=name)
+    tracker.poll_now()
+    return jsonify({"ok": True, "aktiv": bool(daten.get("aktiv", True))})
 
 
 @app.route("/api/trackers")

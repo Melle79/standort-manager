@@ -583,13 +583,41 @@ async function zeichneZonen() {
   }
 
   for (const zone of Zustand.zonen) {
-    const zeile = el('div', 'zonen-zeile');
-    zeile.appendChild(el('span', 'zonen-name', zone.name));
-    zeile.appendChild(el('span', 'zonen-id', zone.entity_id));
-    zeile.appendChild(el('span', 'zonen-radius',
-      Format.distance(zone.radius)));
+    const zeile = el('div', `zonen-zeile${zone.aktiv ? '' : ' zone-aus'}`);
+
+    // Der Schalter ist die eigentliche Einstellung dieser Ansicht. Die
+    // Heimzone bleibt fest - ohne sie hätte "zuhause" keine Bedeutung.
+    const schalter = el('input');
+    schalter.type = 'checkbox';
+    schalter.checked = zone.aktiv;
+    schalter.disabled = zone.fixed;
+    schalter.title = zone.fixed ? I18n.t('zone.home_fixed') : I18n.t('zone.active');
+    schalter.onchange = async () => {
+      await sende(`zones/${encodeURIComponent(zone.entity_id)}`,
+                  { aktiv: schalter.checked });
+      await zeichneZonen();
+    };
+    zeile.appendChild(schalter);
+
+    const text = el('div', 'zonen-text');
+    text.appendChild(el('span', 'zonen-name', zone.name));
+    text.appendChild(el('span', 'zonen-id', zone.entity_id));
+    zeile.appendChild(text);
+
+    // Wer gerade dort ist - macht aus der Liste eine Auskunft statt einer
+    // reinen Aufzählung.
+    const wer = el('span', 'zonen-belegung',
+      zone.occupants && zone.occupants.length
+        ? zone.occupants.join(', ')
+        : I18n.t('zone.empty'));
+    if (!zone.occupants || !zone.occupants.length) wer.classList.add('leer-text');
+    zeile.appendChild(wer);
+
+    zeile.appendChild(el('span', 'zonen-radius', Format.distance(zone.radius)));
     ziel.appendChild(zeile);
   }
+
+  ziel.appendChild(el('p', 'hinweis klein', I18n.t('zone.inactive_hint')));
 }
 
 /* --- Protokoll --------------------------------------------------------- */

@@ -201,6 +201,21 @@ kann.
 
 Was gelernt wurde, steht unter **Einstellungen → Gelernte Fahrzeiten**.
 
+## Zonen
+
+Zonen legt man in Home Assistant an; das Add-on übernimmt sie. Unter **Zonen**
+entscheidest du, welche davon es berücksichtigt. Eine abgeschaltete Zone zählt
+nicht als Aufenthaltsort — Geräte dort gelten als abwesend, und es gibt keine
+Ankunftsmeldung.
+
+Sinnvoll ist das bei Zonen, die für die Anwesenheit keine Rolle spielen und
+sonst nur Meldungen erzeugen. Die Heimzone lässt sich nicht abschalten.
+
+Die Liste zeigt außerdem, wer gerade in welcher Zone ist.
+
+Zonen anderer Ortungsintegrationen, die sich selbst dynamisch anlegen und
+wieder einziehen, werden von vornherein übersprungen.
+
 ## Zweite Bezugszone
 
 Neben der Heimzone lässt sich je Gerät eine weitere Zone wählen, zu der
