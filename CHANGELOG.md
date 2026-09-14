@@ -1,5 +1,12 @@
 # Änderungsverlauf
 
+## 0.3.1 – 14.09.2026
+
+* Der Hinweis auf Waze ist aus den Einstellungen verschwunden. Dass ein
+  abgeschalteter Fremddienst dort erklärt wurde, half beim Bedienen nicht.
+* Handbuch und README vollständig überarbeitet, mit Bildern.
+* Testdaten enthalten keine wirklichen Orte und Namen mehr.
+
 ## 0.3.0 – 14.09.2026
 
 Der Rest der Lücken gegenüber iCloud3 – und eine Bedienung, die sich selbst
