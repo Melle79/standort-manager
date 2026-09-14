@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Standort-Manager</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="kopf">
+  <div class="titel">
+    <h1 data-i18n="app.title">Standort-Manager</h1>
+    <span class="untertitel" data-i18n="app.subtitle"></span>
+  </div>
+  <div class="kopf-rechts">
+    <select id="sprachwahl" class="sprachwahl" data-i18n-aria="settings.language"></select>
+    <button id="aktualisieren" class="knopf still" data-i18n-title="common.refresh">↻</button>
+  </div>
+</header>
+
+<nav class="reiter">
+  <button class="reiter-knopf aktiv" data-ansicht="uebersicht" data-i18n="nav.overview"></button>
+  <button class="reiter-knopf" data-ansicht="geraete" data-i18n="nav.devices"></button>
+  <button class="reiter-knopf" data-ansicht="zonen" data-i18n="nav.zones"></button>
+  <button class="reiter-knopf" data-ansicht="protokoll" data-i18n="nav.log"></button>
+  <button class="reiter-knopf" data-ansicht="einstellungen" data-i18n="nav.settings"></button>
+</nav>
+
+<main>
+
+  <!-- Statusleiste: sagt in einem Satz, ob die App gerade arbeitet -->
+  <div id="statusleiste" class="statusleiste versteckt">
+    <span class="ampel" id="status-ampel"></span>
+    <span id="status-text"></span>
+    <span class="status-rest" id="status-rest"></span>
+    <button id="status-schalter" class="knopf still klein-knopf"></button>
+  </div>
+
+  <!-- Anmeldung: liegt über allem, solange kein Konto verbunden ist -->
+  <section id="anmeldung" class="karte versteckt">
+    <h2 data-i18n="account.title"></h2>
+    <p class="hinweis" data-i18n="account.intro"></p>
+
+    <div id="anmelde-formular">
+      <label data-i18n="account.username"></label>
+      <input type="email" id="apple-id" autocomplete="username" inputmode="email">
+
+      <label data-i18n="account.password"></label>
+      <input type="password" id="apple-passwort" autocomplete="current-password">
+
+      <label class="zeile">
+        <input type="checkbox" id="passwort-merken" checked>
+        <span data-i18n="account.store_password"></span>
+      </label>
+      <p class="hinweis klein" data-i18n="account.store_password_hint"></p>
+
+      <div class="knopfreihe">
+        <button id="anmelden" class="knopf haupt" data-i18n="account.login"></button>
+        <button id="anmelden-abbruch" class="knopf still versteckt" data-i18n="common.cancel"></button>
+      </div>
+    </div>
+
+    <div id="code-formular" class="versteckt">
+      <h3 data-i18n="account.twofactor_title"></h3>
+      <p class="hinweis" data-i18n="account.twofactor_intro"></p>
+      <input type="text" id="code" inputmode="numeric" maxlength="6" class="code-feld">
+      <label class="zeile">
+        <input type="checkbox" id="vertrauen" checked>
+        <span data-i18n="account.trust_device"></span>
+      </label>
+      <p class="hinweis klein" data-i18n="account.trust_hint"></p>
+      <div class="knopfreihe">
+        <button id="code-senden" class="knopf haupt" data-i18n="account.twofactor_submit"></button>
+        <button id="code-neu" class="knopf still" data-i18n="account.twofactor_resend"></button>
+      </div>
+    </div>
+
+    <p id="anmelde-fehler" class="fehler versteckt"></p>
+  </section>
+
+  <!-- Übersicht -->
+  <section id="ansicht-uebersicht" class="ansicht">
+    <div id="geraete-kacheln" class="kacheln"></div>
+    <p id="keine-geraete" class="leer versteckt" data-i18n="device.no_devices"></p>
+  </section>
+
+  <!-- Geräte -->
+  <section id="ansicht-geraete" class="ansicht versteckt">
+    <p class="hinweis" data-i18n="device.intro"></p>
+    <div id="geraete-liste"></div>
+  </section>
+
+  <!-- Zonen -->
+  <section id="ansicht-zonen" class="ansicht versteckt">
+    <p class="hinweis" data-i18n="zone.intro"></p>
+    <div id="zonen-liste"></div>
+  </section>
+
+  <!-- Protokoll -->
+  <section id="ansicht-protokoll" class="ansicht versteckt">
+    <p class="hinweis" data-i18n="event.intro"></p>
+    <div class="werkzeugleiste">
+      <select id="protokoll-stufe">
+        <option value="info" data-i18n="event.level_info"></option>
+        <option value="warning" data-i18n="event.level_warning"></option>
+        <option value="error" data-i18n="event.level_error"></option>
+        <option value="debug" data-i18n="event.level_debug"></option>
+      </select>
+      <button id="protokoll-leeren" class="knopf still" data-i18n="common.delete"></button>
+    </div>
+    <div id="protokoll-liste"></div>
+  </section>
+
+  <!-- Einstellungen -->
+  <section id="ansicht-einstellungen" class="ansicht versteckt">
+    <div class="karte">
+      <h2 data-i18n="settings.language"></h2>
+      <p class="hinweis klein" data-i18n="settings.language_hint"></p>
+      <select id="einst-sprache"></select>
+
+      <h2 data-i18n="settings.units"></h2>
+      <select id="einst-einheiten">
+        <option value="metrisch" data-i18n="settings.units_metric"></option>
+        <option value="imperial" data-i18n="settings.units_imperial"></option>
+      </select>
+
+      <h2 data-i18n="settings.time_format"></h2>
+      <select id="einst-zeitformat">
+        <option value="24h" data-i18n="settings.time_24h"></option>
+        <option value="12h" data-i18n="settings.time_12h"></option>
+      </select>
+    </div>
+
+    <div class="karte">
+      <h2 data-i18n="settings.intervals"></h2>
+      <p class="hinweis klein" data-i18n="settings.interval_hint"></p>
+      <div class="raster">
+        <label data-i18n="settings.interval_home"></label>
+        <input type="number" id="int-zuhause" min="60" step="30">
+        <label data-i18n="settings.interval_away"></label>
+        <input type="number" id="int-abwesend" min="60" step="30">
+        <label data-i18n="settings.interval_moving"></label>
+        <input type="number" id="int-unterwegs" min="30" step="15">
+        <label data-i18n="settings.interval_near"></label>
+        <input type="number" id="int-zonennaehe" min="30" step="15">
+      </div>
+
+      <h2 data-i18n="settings.accuracy_threshold"></h2>
+      <p class="hinweis klein" data-i18n="settings.accuracy_hint"></p>
+      <input type="number" id="einst-genauigkeit" min="10" step="10">
+    </div>
+
+    <div class="karte">
+      <h2 data-i18n="settings.geocode"></h2>
+      <p class="hinweis klein" data-i18n="settings.geocode_hint"></p>
+      <select id="einst-geocode">
+        <option value="nominatim">OpenStreetMap (Nominatim)</option>
+        <option value="aus" data-i18n="settings.geocode_none"></option>
+      </select>
+
+      <h2 data-i18n="settings.route"></h2>
+      <p class="hinweis klein" data-i18n="settings.route_hint"></p>
+      <select id="einst-route">
+        <option value="osrm">OSRM</option>
+        <option value="aus" data-i18n="settings.route_none"></option>
+      </select>
+    </div>
+
+    <div class="karte">
+      <h2 data-i18n="account.accounts"></h2>
+      <p class="hinweis klein" data-i18n="account.multi_hint"></p>
+      <div id="kontenliste"></div>
+      <button id="konto-hinzu" class="knopf still" data-i18n="account.add"></button>
+    </div>
+
+    <div class="karte">
+      <h2 data-i18n="trips.title"></h2>
+      <p class="hinweis klein" data-i18n="trips.hint"></p>
+      <div id="fahrtenliste"></div>
+    </div>
+
+    <div class="karte">
+      <h2 data-i18n="settings.mqtt"></h2>
+      <p id="mqtt-status" class="hinweis"></p>
+      <h2 data-i18n="settings.entity_prefix"></h2>
+      <p class="hinweis klein" data-i18n="settings.entity_prefix_hint"></p>
+      <input type="text" id="einst-praefix">
+    </div>
+
+    <div class="knopfreihe">
+      <button id="einstellungen-speichern" class="knopf haupt" data-i18n="common.save"></button>
+      <span id="speicher-hinweis" class="gespeichert versteckt" data-i18n="common.saved"></span>
+    </div>
+
+    <div class="karte gefahr">
+      <h2 data-i18n="settings.danger"></h2>
+      <button id="abmelden" class="knopf still" data-i18n="account.logout"></button>
+      <button id="zuruecksetzen" class="knopf gefahr-knopf" data-i18n="settings.reset"></button>
+    </div>
+  </section>
+
+  <!-- Verloren-Modus: bewusst hinter einer Rueckfrage, weil er sperrt -->
+  <div id="verloren-dialog" class="ueberlagerung versteckt">
+    <div class="karte dialog">
+      <h2 data-i18n="control.lost_mode"></h2>
+      <p class="hinweis" id="verloren-geraet"></p>
+      <p class="hinweis fehler" data-i18n="control.lost_confirm"></p>
+      <label data-i18n="control.lost_number"></label>
+      <input type="tel" id="verloren-nummer" inputmode="tel">
+      <label data-i18n="control.message_text"></label>
+      <input type="text" id="verloren-text" maxlength="200">
+      <div class="knopfreihe">
+        <button id="verloren-ab" class="knopf gefahr-knopf" data-i18n="control.lost_mode"></button>
+        <button id="verloren-zurueck" class="knopf still" data-i18n="common.cancel"></button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

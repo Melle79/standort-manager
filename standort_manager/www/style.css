@@ -1,0 +1,370 @@
+/* Standort-Manager – Oberfläche.
+ *
+ * Farben folgen den HA-Variablen, wo das Ingress-Fenster sie durchreicht,
+ * und fallen sonst auf eigene Werte zurück. Dadurch passt sich das Add-on
+ * dem Thema an, ohne davon abzuhängen.
+ */
+
+:root {
+  --grund: var(--card-background-color, #fff);
+  --hintergrund: var(--primary-background-color, #f5f5f5);
+  --text: var(--primary-text-color, #212121);
+  --text-still: var(--secondary-text-color, #727272);
+  --akzent: var(--primary-color, #03a9f4);
+  --rahmen: var(--divider-color, #e0e0e0);
+  --gruen: var(--label-badge-green, #43a047);
+  --gelb: var(--label-badge-yellow, #f4b400);
+  --rot: var(--label-badge-red, #db4437);
+  --radius: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --grund: var(--card-background-color, #1c1c1c);
+    --hintergrund: var(--primary-background-color, #111);
+    --text: var(--primary-text-color, #e1e1e1);
+    --text-still: var(--secondary-text-color, #9b9b9b);
+    --rahmen: var(--divider-color, #333);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 0 32px;
+  font-family: var(--paper-font-body1_-_font-family,
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  background: var(--hintergrund);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.versteckt { display: none !important; }
+
+/* --- Kopf ------------------------------------------------------------- */
+
+.kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  background: var(--grund);
+  border-bottom: 1px solid var(--rahmen);
+  flex-wrap: wrap;
+}
+
+.titel h1 { margin: 0; font-size: 20px; font-weight: 500; }
+.untertitel { color: var(--text-still); font-size: 13px; }
+
+.kopf-rechts { display: flex; align-items: center; gap: 8px; }
+
+.sprachwahl {
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--rahmen);
+  background: var(--grund);
+  color: var(--text);
+}
+
+/* --- Reiter ----------------------------------------------------------- */
+
+.reiter {
+  display: flex;
+  gap: 4px;
+  padding: 8px 16px 0;
+  background: var(--grund);
+  border-bottom: 1px solid var(--rahmen);
+  overflow-x: auto;
+}
+
+.reiter-knopf {
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  color: var(--text-still);
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.reiter-knopf.aktiv {
+  color: var(--akzent);
+  border-bottom-color: var(--akzent);
+}
+
+main { padding: 16px; max-width: 1100px; margin: 0 auto; }
+
+/* --- Karten ----------------------------------------------------------- */
+
+.karte {
+  background: var(--grund);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--rahmen);
+}
+
+.karte h2 {
+  font-size: 15px;
+  font-weight: 500;
+  margin: 16px 0 4px;
+}
+.karte h2:first-of-type { margin-top: 0; }
+
+.hinweis { color: var(--text-still); font-size: 13px; margin: 4px 0 12px; }
+.klein { font-size: 12px; }
+.leer { color: var(--text-still); text-align: center; padding: 32px 16px; }
+.fehler { color: var(--rot); }
+.gespeichert { color: var(--gruen); font-size: 13px; align-self: center; }
+
+/* --- Formulare -------------------------------------------------------- */
+
+label { display: block; font-size: 13px; margin-bottom: 4px; }
+
+input[type="text"], input[type="email"], input[type="password"],
+input[type="number"], select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--rahmen);
+  border-radius: var(--radius);
+  background: var(--hintergrund);
+  color: var(--text);
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.zeile { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.zeile input[type="checkbox"] { width: auto; margin: 0; }
+
+.raster {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 4px 12px;
+  align-items: center;
+}
+.raster label { margin: 0; }
+.raster input { margin: 0; }
+
+.code-feld {
+  font-size: 26px;
+  letter-spacing: 10px;
+  text-align: center;
+  font-family: ui-monospace, monospace;
+}
+
+.knopf {
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--rahmen);
+  background: var(--grund);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+}
+.knopf:disabled { opacity: .5; cursor: default; }
+.knopf.haupt { background: var(--akzent); color: #fff; border-color: transparent; }
+.knopf.still { background: none; }
+.knopfreihe { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+
+.gefahr { border-color: var(--rot); }
+.gefahr-knopf { color: var(--rot); border-color: var(--rot); }
+
+/* --- Kacheln ---------------------------------------------------------- */
+
+.kacheln {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.kachel {
+  background: var(--grund);
+  border: 1px solid var(--rahmen);
+  border-left: 4px solid var(--text-still);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+.kachel.zustand-home { border-left-color: var(--gruen); }
+.kachel.zustand-in_zone { border-left-color: var(--akzent); }
+.kachel.zustand-traveling { border-left-color: var(--gelb); }
+.kachel.zustand-offline { border-left-color: var(--rot); }
+
+.kachel-kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.kachel-name { font-weight: 500; font-size: 16px; }
+.akku { font-size: 12px; color: var(--text-still); }
+.akku-schwach { color: var(--rot); }
+
+.kachel-zustand { font-size: 14px; margin-top: 2px; }
+.kachel-adresse { font-size: 13px; color: var(--text-still); margin-top: 4px; }
+
+.kachel-werte { margin-top: 10px; }
+.wert-zeile {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 2px 0;
+}
+.wert-name { color: var(--text-still); }
+
+.kachel-fuss {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--rahmen);
+  font-size: 11px;
+  color: var(--text-still);
+}
+
+/* --- Geräte, Zonen, Protokoll ----------------------------------------- */
+
+.geraet-kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+.modell { color: var(--text-still); font-size: 12px; }
+.feld { margin-bottom: 8px; }
+.feld .hinweis { margin-top: -8px; }
+
+.zonen-zeile {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--grund);
+  border: 1px solid var(--rahmen);
+  border-radius: var(--radius);
+  margin-bottom: 6px;
+}
+.zonen-name { font-weight: 500; flex: 1; }
+.zonen-id { color: var(--text-still); font-size: 12px; font-family: ui-monospace, monospace; }
+.zonen-radius { color: var(--text-still); font-size: 12px; }
+
+.werkzeugleiste { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+.werkzeugleiste select { width: auto; margin: 0; }
+
+.protokoll-zeile {
+  display: flex;
+  gap: 12px;
+  padding: 7px 12px;
+  border-left: 3px solid transparent;
+  background: var(--grund);
+  border-bottom: 1px solid var(--rahmen);
+  font-size: 13px;
+}
+.protokoll-zeile.stufe-warning { border-left-color: var(--gelb); }
+.protokoll-zeile.stufe-error { border-left-color: var(--rot); }
+.protokoll-zeit {
+  color: var(--text-still);
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* --- Schmale Fenster --------------------------------------------------- */
+
+@media (max-width: 520px) {
+  main { padding: 12px; }
+  .kacheln { grid-template-columns: 1fr; }
+  .raster { grid-template-columns: 1fr; }
+  .protokoll-zeile { flex-direction: column; gap: 2px; }
+}
+
+/* --- Steuerung ---------------------------------------------------------- */
+
+/* Statusleiste: was die App gerade tut, in einer Zeile */
+
+.statusleiste {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  background: var(--grund);
+  border: 1px solid var(--rahmen);
+  border-radius: var(--radius);
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.ampel {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--gruen);
+  flex: none;
+}
+.statusleiste.angehalten .ampel { background: var(--gelb); }
+.statusleiste.angehalten { border-color: var(--gelb); }
+
+.status-rest { color: var(--text-still); flex: 1; }
+.klein-knopf { padding: 5px 12px; font-size: 13px; }
+
+.befehle {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rahmen);
+}
+.befehle .knopf { padding: 6px 12px; font-size: 13px; }
+
+.kachel-richtung { font-size: 13px; color: var(--text-still); margin-top: 2px; }
+
+.ueberlagerung {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 10;
+}
+.dialog { max-width: 420px; width: 100%; margin: 0; }
+
+.meldung {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: var(--grund);
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  z-index: 20;
+}
+
+/* --- Konten und Fahrtenbuch -------------------------------------------- */
+
+.konto-zeile, .fahrt-zeile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rahmen);
+  font-size: 13px;
+}
+.konto-zeile:last-child, .fahrt-zeile:last-child { border-bottom: none; }
+.konto-name { flex: 1; font-weight: 500; }
+.konto-zustand { color: var(--text-still); font-size: 12px; }
+.konto-zustand.bereit { color: var(--gruen); }
+.konto-zustand.wartet { color: var(--gelb); }
+.konto-zustand.fehler { color: var(--rot); }
+.fahrt-ziel { flex: 1; }
+.fahrt-wert { color: var(--text-still); font-size: 12px; }
