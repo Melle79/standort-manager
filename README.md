@@ -120,7 +120,7 @@ standort_manager/
 
 MIT — siehe [LICENSE](LICENSE).
 
-Dieses Projekt ist eigenständig und kein Fork von iCloud3. Es benutzt
+Dieses Projekt ist eigenständig und es benutzt
 [pyicloud](https://github.com/timlaing/pyicloud) für den Zugriff auf Apples
 Ortungsdienst. Die Adressauflösung nutzt
 [Nominatim](https://nominatim.openstreetmap.org/), die Routenberechnung
