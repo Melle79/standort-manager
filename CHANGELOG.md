@@ -1,5 +1,37 @@
 # Änderungsverlauf
 
+## 0.6.0 / 0.6.1 – 17.09.2026
+
+**Eine abgelaufene Apple-Sitzung repariert sich jetzt selbst.**
+
+Am 16.09. meldete Apple vier Sekunden nach dem Start „Authentication required
+for Account (409)". Das Add-on hielt das für einen gewöhnlichen Abfragefehler,
+schrieb ihn ins Protokoll und machte weiter — jede folgende Abfrage scheiterte
+genauso. Dreiundzwanzig Minuten lang wurde nichts geortet, bis jemand von Hand
+eingriff.
+
+* Ein 409 oder 401 gilt jetzt als das, was er ist: abgelaufene Sitzung. Das
+  Add-on meldet sich mit dem gespeicherten Passwort selbst neu an — bei einer
+  vertrauenswürdigen Sitzung ohne Bestätigungscode.
+* Höchstens alle fünf Minuten ein Versuch, damit bei einem echten
+  Passwortproblem nicht gegen Apple gehämmert wird.
+* Verlangt Apple doch einen Code, legt das Add-on eine Benachrichtigung in
+  Home Assistant an. Bisher fiel der Stillstand erst auf, wenn jemand
+  nachsah. Nach erfolgreicher Anmeldung verschwindet sie von selbst.
+* Das gilt auch beim Start: Verlangt Apple schon beim Wiederaufnehmen der
+  Sitzung einen Code, wird gemeldet. Bei einer Anmeldung über die Oberfläche
+  nicht — da sitzt jemand davor und sieht die Abfrage ohnehin. Der Hinweis
+  kommt einmal je Stillstand, nicht bei jedem Abfragezyklus.
+
+**Weniger Rauschen im Protokoll**
+
+* Der Wechsel zwischen iCloud und Companion-App wurde als Ereignis
+  aufgezeichnet — an einem Tag 122-mal, allein 94-mal für ein Gerät. Im
+  Ringpuffer verdrängte das genau die Meldungen, die zählen. Welche Quelle
+  gerade gilt, steht weiterhin im Gerätezustand und in den MQTT-Attributen.
+* „Gerät nicht erreichbar" wird nur noch für verfolgte Geräte gemeldet. Ein
+  beobachtetes iPad im Schrank ist kein Ereignis.
+
 ## 0.5.0 – 14.09.2026
 
 * **Die Zonen-Ansicht kann jetzt, was sie versprach.** Dort stand „Hier legst

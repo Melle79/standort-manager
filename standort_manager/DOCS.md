@@ -272,8 +272,14 @@ widersprechen sich irgendwann.
 
 ## Wenn etwas nicht geht
 
-**„Nicht angemeldet" nach einem Neustart** — die Apple-Sitzung ist abgelaufen.
-In der Oberfläche neu anmelden; mit gespeichertem Passwort genügt der Code.
+**„Nicht angemeldet"** — die Apple-Sitzung ist abgelaufen. Normalerweise
+merkt das Add-on das selbst und meldet sich mit dem gespeicherten Passwort
+neu an; im Protokoll steht dann „Sitzung abgelaufen – melde mich neu an".
+
+Verlangt Apple dabei einen Bestätigungscode, geht es ohne dich nicht weiter.
+Dann legt das Add-on eine Benachrichtigung in Home Assistant an, damit du es
+nicht erst Stunden später bemerkst. Öffne die Oberfläche und melde dich neu an;
+die Benachrichtigung verschwindet von selbst.
 
 **Keine Entitäten in Home Assistant** — unter Einstellungen prüfen, ob der
 MQTT-Broker verbunden ist. Ohne Broker läuft die Oberfläche weiter, es

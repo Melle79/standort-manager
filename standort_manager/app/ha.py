@@ -179,3 +179,39 @@ def _parse_ts(value: str | None) -> float | None:
         return datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
     except ValueError:
         return None
+
+
+def melde(titel: str, text: str, kennung: str = "standort_manager") -> bool:
+    """Eine dauerhafte Benachrichtigung in Home Assistant anlegen.
+
+    Für die Fälle, in denen das Add-on nicht weiterkommt und jemand etwas
+    tun muss. Ohne sie merkt man erst Stunden später, dass nichts mehr
+    aktualisiert wird.
+    """
+    if not available():
+        return False
+    try:
+        resp = requests.post(
+            f"{CORE_API}/services/persistent_notification/create",
+            headers=_headers(),
+            json={"title": titel, "message": text, "notification_id": kennung},
+            timeout=TIMEOUT,
+        )
+        return resp.ok
+    except requests.RequestException as err:
+        log.warning("Benachrichtigung nicht zustellbar: %s", err)
+        return False
+
+
+def meldung_zuruecknehmen(kennung: str = "standort_manager") -> None:
+    """Die Benachrichtigung wieder entfernen, sobald das Problem weg ist."""
+    if not available():
+        return
+    try:
+        requests.post(
+            f"{CORE_API}/services/persistent_notification/dismiss",
+            headers=_headers(), json={"notification_id": kennung},
+            timeout=TIMEOUT,
+        )
+    except requests.RequestException:
+        pass

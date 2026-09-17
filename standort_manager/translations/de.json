@@ -203,7 +203,11 @@
       "command_sent": "{device}: {command} gesendet",
       "command_failed": "{device}: {command} fehlgeschlagen – {reason}",
       "tracking_paused": "Verfolgung angehalten",
-      "tracking_resumed": "Verfolgung fortgesetzt"
+      "tracking_resumed": "Verfolgung fortgesetzt",
+      "session_refresh": "Sitzung abgelaufen – melde mich neu an",
+      "session_refreshed": "Neu angemeldet, Verfolgung läuft weiter",
+      "session_refresh_failed": "Neuanmeldung fehlgeschlagen: {reason}",
+      "needs_code": "Apple verlangt einen Bestätigungscode – die Verfolgung steht still, bis er eingegeben ist"
     },
     "error": {
       "generic": "Etwas ist schiefgegangen: {reason}",
@@ -318,6 +322,10 @@
       "window_abends": "abends",
       "window_sonst": "sonst",
       "window_wochenende": "Wochenende"
+    },
+    "notify": {
+      "title": "Standort-Manager",
+      "needs_code": "Apple verlangt einen Bestätigungscode. Bis er eingegeben ist, werden keine Standorte mehr abgefragt.\n\nÖffne das Add-on und melde dich neu an."
     }
   }
 }

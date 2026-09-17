@@ -26,6 +26,8 @@ Fahrzeiten, Befehle an die Geräte und eine Dashboard-Karte.
 * Zonen einzeln ein- und ausschaltbar; die Liste zeigt, wer gerade wo ist
 * Eine zweite Bezugszone je Gerät neben dem Zuhause, etwa die Schule
 * Mehrere Apple-Konten, wenn die Familie auf mehr als eine Apple-ID verteilt ist
+* Erneuert eine abgelaufene Apple-Sitzung selbst; braucht es doch einen
+  Bestätigungscode, meldet es sich über Home Assistant
 
 **Steuerung**
 

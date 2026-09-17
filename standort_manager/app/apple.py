@@ -25,7 +25,9 @@ from pyicloud.exceptions import (
     PyiCloudServiceUnavailable,
 )
 
+import ha
 from events import events
+from i18n import translator
 from store import SESSION_DIR, store
 
 log = logging.getLogger("standort.apple")
@@ -48,6 +50,24 @@ def _klartext(fehler, grenze: int = 140) -> str:
         text = text[:haelfte].strip()
     return text[:grenze].rstrip(" ,;:") or "?"
 
+# Apple meldet eine abgelaufene Sitzung nicht als eigenen Ausnahmetyp,
+# sondern als gewöhnlichen API-Fehler mit 409 oder 401. Ohne diese Liste
+# sähe das aus wie ein Abfragefehler - und die App drehte sich im Kreis,
+# statt sich neu anzumelden.
+SITZUNG_ABGELAUFEN = (
+    "authentication required",
+    "(409)",
+    "(401)",
+    "unauthorized",
+    "session expired",
+)
+
+# So oft darf eine Wiederanmeldung höchstens versucht werden, bevor die
+# App aufgibt und nach einem Code fragt - sonst hämmert sie bei einem
+# echten Passwortproblem gegen Apple.
+WIEDERANMELDUNG_PAUSE = 300
+
+
 # Zustände, die die Oberfläche unterscheidet.
 STATE_LOGGED_OUT = "logged_out"
 STATE_TWOFACTOR = "twofactor"
@@ -69,6 +89,10 @@ class AppleAccount:
         # werden darf also auch erst dann.
         self._pending_password: str | None = None
         self._pending_store: bool = True
+        # Wann zuletzt selbst neu angemeldet wurde - gegen Dauerversuche.
+        self._letzte_wiederanmeldung = 0.0
+        # Damit der Hinweis nicht bei jedem Zyklus erneut kommt.
+        self._codebedarf_gemeldet = False
         # Apple bremst bei zu vielen Abfragen. Läuft eine Sperre, wird bis
         # zu diesem Zeitpunkt gar nicht erst gefragt.
         self.throttled_until = 0.0
@@ -136,6 +160,8 @@ class AppleAccount:
                 self.state = STATE_TWOFACTOR
                 self.error_key = None
                 events.add("event.twofactor_required", "warning")
+                if from_restore:
+                    self._melde_codebedarf()
                 return self.status()
             except PyiCloudAPIResponseException as err:
                 self._api = None
@@ -154,10 +180,16 @@ class AppleAccount:
                 self.state = STATE_TWOFACTOR
                 self.error_key = None
                 events.add("event.twofactor_required", "warning")
+                # Nur melden, wenn die App von sich aus angemeldet hat.
+                # Bei einer Anmeldung über die Oberfläche sitzt jemand
+                # davor und sieht die Code-Abfrage ohnehin.
+                if from_restore:
+                    self._melde_codebedarf()
                 return self.status()
 
             self.state = STATE_READY
             self.error_key = None
+            self._codebedarf_gemeldet = False
             store.set_credentials(username, password if store_password else None)
             events.add("event.login_ok", "info", user=username)
             return self.status()
@@ -200,6 +232,8 @@ class AppleAccount:
 
             self.state = STATE_READY
             self.error_key = None
+            self._codebedarf_gemeldet = False
+            ha.meldung_zuruecknehmen()
             events.add("event.login_ok", "info", user=self.username or "")
             return self.status()
 
@@ -244,8 +278,8 @@ class AppleAccount:
                 self._api.devices.refresh(locate=locate)
                 geraete = [_normalize(d) for d in self._api.devices]
             except (PyiCloud2FARequiredException, PyiCloud2SARequiredException):
-                self.state = STATE_TWOFACTOR
                 events.add("event.session_expired", "warning")
+                self._sitzung_erneuern()
                 return []
             except PyiCloudServiceNotActivatedException as err:
                 self.state = STATE_ERROR
@@ -253,14 +287,21 @@ class AppleAccount:
                 events.add("event.poll_failed", "error", reason=_klartext(err))
                 return []
             except PyiCloudAPIResponseException as err:
+                text = str(err).lower()
                 # 503 und 450 bedeuten in der Praxis: zu oft gefragt.
-                text = str(err)
-                if any(code in text for code in ("503", "450", "Rate")):
+                if any(code in text for code in ("503", "450", "rate")):
                     self.throttled_until = time.time() + 600
                     events.add("event.poll_skipped", "warning",
                                reason="error.rate_limited")
+                elif any(m in text for m in SITZUNG_ABGELAUFEN):
+                    # Kein gewöhnlicher Abfragefehler: die Sitzung ist hin.
+                    # Ohne diesen Zweig scheitert jede weitere Abfrage
+                    # genauso, bis jemand von Hand eingreift.
+                    events.add("event.session_expired", "warning")
+                    self._sitzung_erneuern()
                 else:
-                    events.add("event.poll_failed", "error", reason=text[:200])
+                    events.add("event.poll_failed", "error",
+                               reason=_klartext(err))
                 return []
             except Exception as err:  # noqa: BLE001 – der Thread muss leben
                 events.add("event.poll_failed", "error", reason=_klartext(err))
@@ -271,6 +312,55 @@ class AppleAccount:
             events.add("event.poll_ok", "debug", count=len(geraete),
                        seconds=round(time.time() - started, 1))
             return geraete
+
+    def _sitzung_erneuern(self) -> bool:
+        """Selbst neu anmelden, wenn die Sitzung abgelaufen ist.
+
+        Bei einer vertrauenswürdigen Sitzung geht das mit dem gespeicherten
+        Passwort ohne Bestätigungscode durch. Erst wenn Apple doch einen
+        verlangt, muss der Benutzer ran - und erfährt das dann auch.
+        """
+        jetzt = time.time()
+        if jetzt - self._letzte_wiederanmeldung < WIEDERANMELDUNG_PAUSE:
+            return False
+        self._letzte_wiederanmeldung = jetzt
+
+        username, passwort = store.credentials(self.username)
+        if not username or not passwort:
+            # Ohne Passwort ist nichts zu machen; der Benutzer muss ran.
+            self.state = STATE_TWOFACTOR
+            self._melde_codebedarf()
+            return False
+
+        events.add("event.session_refresh", "warning")
+        ergebnis = self.login(username, passwort, store_password=True,
+                              from_restore=True)
+
+        if ergebnis["state"] == STATE_READY:
+            events.add("event.session_refreshed", "info")
+            ha.meldung_zuruecknehmen()
+            return True
+
+        if ergebnis["state"] == STATE_TWOFACTOR:
+            self._melde_codebedarf()
+        else:
+            events.add("event.session_refresh_failed", "error",
+                       reason=ergebnis.get("error_key") or "error.generic")
+        return False
+
+    def _melde_codebedarf(self) -> None:
+        """Den Benutzer aktiv darauf hinweisen, dass nichts mehr läuft.
+
+        Höchstens einmal je Stillstand: Ohne die Sperre stünde nach jedem
+        Abfragezyklus ein neuer Protokolleintrag da.
+        """
+        if self._codebedarf_gemeldet:
+            return
+        self._codebedarf_gemeldet = True
+        events.add("event.needs_code", "error")
+        lang = store.get("sprache", default="de")
+        ha.melde(translator.t("notify.title", lang),
+                 translator.t("notify.needs_code", lang))
 
     # --------------------------------------------------------------- Befehle
 

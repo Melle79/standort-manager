@@ -111,6 +111,7 @@ def login():
         return jsonify({"error_key": "error.bad_credentials"}), 400
     ergebnis = account.login(username, password, store_password=merken)
     if ergebnis["state"] == "ready":
+        ha.meldung_zuruecknehmen()
         tracker.poll_now()
     return jsonify(ergebnis)
 
@@ -124,6 +125,8 @@ def twofactor():
     ergebnis = account.submit_2fa(daten.get("username"), code,
                                   trust=bool(daten.get("trust", True)))
     if ergebnis["state"] == "ready":
+        # Das Problem ist behoben - der Hinweis in Home Assistant kann weg.
+        ha.meldung_zuruecknehmen()
         tracker.poll_now()
     return jsonify(ergebnis)
 

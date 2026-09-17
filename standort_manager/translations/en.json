@@ -203,7 +203,11 @@
       "command_sent": "{device}: sent {command}",
       "command_failed": "{device}: {command} failed – {reason}",
       "tracking_paused": "Tracking paused",
-      "tracking_resumed": "Tracking resumed"
+      "tracking_resumed": "Tracking resumed",
+      "session_refresh": "Session expired – signing in again",
+      "session_refreshed": "Signed in again, tracking continues",
+      "session_refresh_failed": "Re-login failed: {reason}",
+      "needs_code": "Apple asks for a verification code – tracking is paused until it is entered"
     },
     "error": {
       "generic": "Something went wrong: {reason}",
@@ -318,6 +322,10 @@
       "window_abends": "evenings",
       "window_sonst": "other",
       "window_wochenende": "weekend"
+    },
+    "notify": {
+      "title": "Location Manager",
+      "needs_code": "Apple asks for a verification code. Until it is entered, no locations are requested.\n\nOpen the add-on and sign in again."
     }
   }
 }

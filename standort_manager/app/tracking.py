@@ -250,17 +250,23 @@ class Tracker:
                        percent=zustand.battery)
 
         loc = roh.get("location")
+        # Nur bei "Verfolgen" melden: ein beobachtetes iPad, das im Schrank
+        # liegt, ist kein Ereignis - es füllt nur das Protokoll.
+        meldenswert = einstellung["modus"] == "track"
+
         if not loc:
             if not zustand.offline:
                 zustand.offline = True
-                events.add("event.device_offline", "warning",
-                           device_id=device_id, device=zustand.name)
+                if meldenswert:
+                    events.add("event.device_offline", "warning",
+                               device_id=device_id, device=zustand.name)
             return zustand
 
         if zustand.offline:
             zustand.offline = False
-            events.add("event.device_back_online", "info",
-                       device_id=device_id, device=zustand.name)
+            if meldenswert:
+                events.add("event.device_back_online", "info",
+                           device_id=device_id, device=zustand.name)
 
         schwelle = store.get("genauigkeitsschwelle", default=100)
         if loc.get("accuracy") and loc["accuracy"] > schwelle and zustand.location:
@@ -299,9 +305,11 @@ class Tracker:
             if zustand.name == device_id:
                 continue
 
-            if zustand.source != "companion":
-                events.add("event.source_switched", "debug", device_id=device_id,
-                           device=zustand.name, source="device.source_companion")
+            # Der Wechsel zwischen iCloud und Companion-App ist der
+            # Normalfall und passierte 122-mal an einem Tag. Als Ereignis
+            # verdrängte er im Ringpuffer genau die Meldungen, die zählen.
+            # Welche Quelle gerade gilt, steht im Gerätezustand und in den
+            # MQTT-Attributen.
             if loc.get("battery") is not None:
                 zustand.battery = loc["battery"]
             self._update_location(zustand, loc, "companion", jetzt)
