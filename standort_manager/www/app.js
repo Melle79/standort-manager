@@ -662,6 +662,20 @@ async function ladeEinstellungen() {
   $('einst-geocode').value = e.geocode.anbieter;
   $('einst-route').value = e.route.anbieter;
   $('einst-praefix').value = e.entity_praefix;
+  let dienste = [];
+  try { dienste = await hole('notify_services'); } catch (err) { /* egal */ }
+  const wahl = $('einst-benachrichtigung');
+  wahl.innerHTML = '';
+  wahl.appendChild(el('option', '', I18n.t('settings.notify_none')));
+  wahl.lastChild.value = '';
+  // Ein gespeicherter Dienst bleibt wählbar, auch wenn HA ihn gerade
+  // nicht meldet - sonst wäre er beim nächsten Speichern still weg.
+  for (const d of new Set([...dienste, e.benachrichtigung].filter(Boolean))) {
+    const opt = el('option', '', d);
+    opt.value = d;
+    wahl.appendChild(opt);
+  }
+  wahl.value = e.benachrichtigung || '';
   if (!Zustand.zonen.length) {
     try { Zustand.zonen = await hole('zones'); } catch (err) { /* egal */ }
   }
@@ -757,6 +771,7 @@ function verdrahteEinstellungen() {
       zeitformat: $('einst-zeitformat').value,
       entity_praefix: $('einst-praefix').value,
       genauigkeitsschwelle: Number($('einst-genauigkeit').value),
+      benachrichtigung: $('einst-benachrichtigung').value,
       intervalle: {
         zuhause: Number($('int-zuhause').value),
         abwesend: Number($('int-abwesend').value),

@@ -197,10 +197,48 @@ def melde(titel: str, text: str, kennung: str = "standort_manager") -> bool:
             json={"title": titel, "message": text, "notification_id": kennung},
             timeout=TIMEOUT,
         )
+        _aufs_handy(titel, text)
         return resp.ok
     except requests.RequestException as err:
         log.warning("Benachrichtigung nicht zustellbar: %s", err)
         return False
+
+
+def _aufs_handy(titel: str, text: str) -> None:
+    """Zusätzlich an einen notify-Dienst, falls in den Einstellungen gewählt.
+
+    Die Glocke in Home Assistant sieht nur, wer HA gerade offen hat. Ein
+    Stillstand der Ortung fiel so erst Tage später auf.
+    """
+    from store import store
+    dienst = (store.get("benachrichtigung", default="") or "").strip()
+    if not dienst.startswith("notify."):
+        return
+    try:
+        requests.post(
+            f"{CORE_API}/services/notify/{dienst.split('.', 1)[1]}",
+            headers=_headers(), json={"title": titel, "message": text},
+            timeout=TIMEOUT,
+        )
+    except requests.RequestException as err:
+        log.warning("Handy-Benachrichtigung nicht zustellbar: %s", err)
+
+
+def notify_dienste() -> list[str]:
+    """Alle notify-Dienste, zur Auswahl in den Einstellungen."""
+    if not available():
+        return []
+    try:
+        resp = requests.get(f"{CORE_API}/services", headers=_headers(),
+                            timeout=TIMEOUT)
+        resp.raise_for_status()
+        for domain in resp.json():
+            if domain.get("domain") == "notify":
+                return sorted(f"notify.{d}" for d in domain.get("services", {})
+                              if d not in ("send_message", "persistent_notification"))
+    except (requests.RequestException, ValueError) as err:
+        log.warning("notify-Dienste nicht abrufbar: %s", err)
+    return []
 
 
 def meldung_zuruecknehmen(kennung: str = "standort_manager") -> None:

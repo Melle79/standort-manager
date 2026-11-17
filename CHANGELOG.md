@@ -1,5 +1,32 @@
 # Änderungsverlauf
 
+## 0.6.3 – 17.11.2026
+
+**Fällt die Apple-Anmeldung aus, erfährt man es jetzt.**
+
+Ende Oktober lehnte Apple die Anmeldung mit „Invalid email/password
+combination“ ab. Das Add-on fragte daraufhin zwei Stunden lang alle 15
+Sekunden weiter. Nach einem Neustart scheiterte das Wiederanknüpfen mit
+demselben Fehler — und genau dieser Fall war von Protokoll und Meldung
+ausgenommen. Drei Wochen lang wurde nichts über iCloud geortet, und weder das
+Protokoll noch Home Assistant sagten etwas. Aufgefallen ist es erst beim
+Öffnen des Add-ons.
+
+* Eine abgelehnte Anmeldung steht immer im Protokoll und erzeugt eine Meldung
+  in Home Assistant, auch direkt nach einem Neustart.
+* Das Add-on versucht es selbst wieder, mit wachsendem Abstand (5 Minuten bis
+  1 Stunde), höchstens sechsmal. Danach nicht mehr: Bei einem wirklich
+  falschen Passwort würde Dauerprobieren das Apple-Konto sperren.
+* „Invalid email/password combination“ mitten im Betrieb gilt als verworfene
+  Sitzung und führt zur Neuanmeldung, statt als gewöhnlicher Fehler
+  stehenzubleiben.
+* Nach einer gescheiterten Abfrage wird mit wachsender Pause (1 bis 15
+  Minuten) weitergefragt statt alle 15 Sekunden.
+* Neu in den Einstellungen: **Benachrichtigung aufs Handy.** Wer hier einen
+  notify-Dienst wählt, bekommt die Stillstandsmeldung zusätzlich aufs Telefon.
+  Die Meldung in Home Assistant verschwindet von selbst, sobald die Anmeldung
+  wieder klappt.
+
 ## 0.6.2 – 17.11.2026
 
 **Ein neues iPhone verliert seine Einstellungen nicht mehr.**

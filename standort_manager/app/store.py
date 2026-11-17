@@ -46,6 +46,8 @@ DEFAULTS = {
         "heimzone": "zone.home",
     },
     "durchfahrt_sekunden": 30,
+    # notify-Dienst für Stillstandsmeldungen aufs Handy, leer = nur HA.
+    "benachrichtigung": "",
     "geraete": {},
     # Apple-ID -> {password}. Mehrere Konten sind möglich, etwa wenn die
     # Familie auf zwei Apple-IDs verteilt ist.

@@ -381,7 +381,8 @@ def settings_set():
     sprache_vorher = store.get("sprache", default="de")
 
     for schluessel in ("sprache", "einheiten", "zeitformat", "entity_praefix",
-                       "genauigkeitsschwelle", "durchfahrt_sekunden"):
+                       "genauigkeitsschwelle", "durchfahrt_sekunden",
+                       "benachrichtigung"):
         if schluessel in daten:
             store.set(schluessel, daten[schluessel])
 
@@ -405,6 +406,11 @@ def settings_set():
         events.add("event.config_changed", "info", setting="settings.title")
 
     return jsonify(store.all())
+
+
+@app.route("/api/notify_services")
+def notify_services():
+    return jsonify(ha.notify_dienste())
 
 
 @app.route("/api/reset", methods=["POST"])

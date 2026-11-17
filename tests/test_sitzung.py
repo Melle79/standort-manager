@@ -104,7 +104,7 @@ print("   zweiter Zyklus meldet nichts mehr")
 print("4c. Auch beim Start wird gemeldet, wenn Apple einen Code will")
 gemeldet.clear()
 neues = apple.AppleAccount("test@example.com")
-neues._codebedarf_gemeldet = False
+neues._stillstand_gemeldet = False
 neues.login("test@example.com", "geheim", from_restore=True)
 assert neues.state == apple.STATE_TWOFACTOR, neues.state
 assert gemeldet, ("Beim Start ohne Benachrichtigung - genau die Luecke, die "

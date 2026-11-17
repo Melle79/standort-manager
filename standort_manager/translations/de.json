@@ -258,7 +258,10 @@
       "entity_prefix_hint": "Ändern erzeugt neue Entitäten – die alten bleiben als Karteileichen zurück.",
       "danger": "Heikler Bereich",
       "reset": "Alles zurücksetzen",
-      "reset_confirm": "Wirklich alle Einstellungen, Geräte und die Anmeldung löschen?"
+      "reset_confirm": "Wirklich alle Einstellungen, Geräte und die Anmeldung löschen?",
+      "notify_service": "Benachrichtigung aufs Handy",
+      "notify_service_hint": "Steht die Ortung still, weil Apple eine neue Anmeldung verlangt, erscheint immer eine Meldung in Home Assistant. Mit einem Dienst hier kommt sie zusätzlich aufs Handy.",
+      "notify_none": "Nur in Home Assistant"
     },
     "unit": {
       "km": "km",
@@ -326,7 +329,8 @@
     },
     "notify": {
       "title": "Standort-Manager",
-      "needs_code": "Apple verlangt einen Bestätigungscode. Bis er eingegeben ist, werden keine Standorte mehr abgefragt.\n\nÖffne das Add-on und melde dich neu an."
+      "needs_code": "Apple verlangt einen Bestätigungscode. Bis er eingegeben ist, werden keine Standorte mehr abgefragt.\n\nÖffne das Add-on und melde dich neu an.",
+      "login_failed": "Apple hat die Anmeldung abgelehnt. Bis zur neuen Anmeldung werden keine Standorte abgefragt.\n\nDas Add-on versucht es noch einige Male selbst. Klappt es nicht, öffne das Add-on und melde dich neu an."
     }
   }
 }

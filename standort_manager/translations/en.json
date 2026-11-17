@@ -258,7 +258,10 @@
       "entity_prefix_hint": "Changing this creates new entities – the old ones stay behind as orphans.",
       "danger": "Danger zone",
       "reset": "Reset everything",
-      "reset_confirm": "Really delete all settings, devices and the sign-in?"
+      "reset_confirm": "Really delete all settings, devices and the sign-in?",
+      "notify_service": "Notification to phone",
+      "notify_service_hint": "If tracking stops because Apple requires a new sign-in, a notification always appears in Home Assistant. Choose a service here to also get it on your phone.",
+      "notify_none": "Home Assistant only"
     },
     "unit": {
       "km": "km",
@@ -326,7 +329,8 @@
     },
     "notify": {
       "title": "Location Manager",
-      "needs_code": "Apple asks for a verification code. Until it is entered, no locations are requested.\n\nOpen the add-on and sign in again."
+      "needs_code": "Apple asks for a verification code. Until it is entered, no locations are requested.\n\nOpen the add-on and sign in again.",
+      "login_failed": "Apple rejected the sign-in. Until you sign in again, no locations are requested.\n\nThe add-on retries a few times by itself. If that does not help, open the add-on and sign in again."
     }
   }
 }

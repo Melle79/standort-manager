@@ -60,12 +60,24 @@ SITZUNG_ABGELAUFEN = (
     "(401)",
     "unauthorized",
     "session expired",
+    # So antwortet Apple auch, wenn es eine Sitzung verwirft - nicht nur bei
+    # einem falschen Passwort. Am 28.10.2026 stand das zwei Stunden lang
+    # bei jeder Abfrage im Protokoll, ohne dass sich etwas tat.
+    "invalid email/password",
 )
 
 # So oft darf eine Wiederanmeldung höchstens versucht werden, bevor die
 # App aufgibt und nach einem Code fragt - sonst hämmert sie bei einem
 # echten Passwortproblem gegen Apple.
 WIEDERANMELDUNG_PAUSE = 300
+# Lehnt Apple die Anmeldung ab, wird es mit wachsendem Abstand noch einige
+# Male versucht. Danach nicht mehr: Bei einem wirklich falschen Passwort
+# würde Dauerprobieren das Apple-Konto sperren.
+WIEDERANMELDUNG_MAX_PAUSE = 3600
+WIEDERANMELDUNG_MAX_VERSUCHE = 6
+# Nach einer gescheiterten Abfrage nicht im 15-Sekunden-Takt weiterfragen.
+FEHLERPAUSE_START = 60
+FEHLERPAUSE_MAX = 900
 
 
 # Zustände, die die Oberfläche unterscheidet.
@@ -91,8 +103,10 @@ class AppleAccount:
         self._pending_store: bool = True
         # Wann zuletzt selbst neu angemeldet wurde - gegen Dauerversuche.
         self._letzte_wiederanmeldung = 0.0
+        self._wiederanmeldungen = 0
         # Damit der Hinweis nicht bei jedem Zyklus erneut kommt.
-        self._codebedarf_gemeldet = False
+        self._stillstand_gemeldet = False
+        self._fehlerpause = 0
         # Apple bremst bei zu vielen Abfragen. Läuft eine Sperre, wird bis
         # zu diesem Zeitpunkt gar nicht erst gefragt.
         self.throttled_until = 0.0
@@ -139,9 +153,14 @@ class AppleAccount:
                 self._api = None
                 self.state = STATE_ERROR
                 self.error_key = "error.bad_credentials"
-                if not from_restore:
-                    events.add("event.login_failed", "error", user=username,
-                               reason=_klartext(err))
+                # Auch beim Wiederanknüpfen nach einem Neustart: Bis 0.6.2
+                # stand hier "if not from_restore", und das Add-on blieb
+                # 20 Tage still abgemeldet - ohne Protokolleintrag, ohne
+                # Hinweis in Home Assistant.
+                events.add("event.login_failed", "error", user=username,
+                           reason=_klartext(err))
+                if from_restore:
+                    self._melde_stillstand("notify.login_failed")
                 return self.status()
             except (PyiCloud2FARequiredException, PyiCloud2SARequiredException):
                 # pyicloud legt das Objekt trotzdem an – für den Codeschritt
@@ -161,7 +180,7 @@ class AppleAccount:
                 self.error_key = None
                 events.add("event.twofactor_required", "warning")
                 if from_restore:
-                    self._melde_codebedarf()
+                    self._melde_stillstand("notify.needs_code")
                 return self.status()
             except PyiCloudAPIResponseException as err:
                 self._api = None
@@ -169,6 +188,8 @@ class AppleAccount:
                 self.error_key = "error.apple_unavailable"
                 events.add("event.login_failed", "error", user=username,
                            reason=_klartext(err))
+                if from_restore:
+                    self._melde_stillstand("notify.login_failed")
                 return self.status()
 
             self._api = api
@@ -184,12 +205,15 @@ class AppleAccount:
                 # Bei einer Anmeldung über die Oberfläche sitzt jemand
                 # davor und sieht die Code-Abfrage ohnehin.
                 if from_restore:
-                    self._melde_codebedarf()
+                    self._melde_stillstand("notify.needs_code")
                 return self.status()
 
             self.state = STATE_READY
             self.error_key = None
-            self._codebedarf_gemeldet = False
+            self._wiederanmeldungen = 0
+            if self._stillstand_gemeldet:
+                ha.meldung_zuruecknehmen()
+            self._stillstand_gemeldet = False
             store.set_credentials(username, password if store_password else None)
             events.add("event.login_ok", "info", user=username)
             return self.status()
@@ -232,7 +256,8 @@ class AppleAccount:
 
             self.state = STATE_READY
             self.error_key = None
-            self._codebedarf_gemeldet = False
+            self._stillstand_gemeldet = False
+            self._wiederanmeldungen = 0
             ha.meldung_zuruecknehmen()
             events.add("event.login_ok", "info", user=self.username or "")
             return self.status()
@@ -268,6 +293,10 @@ class AppleAccount:
         leere Liste zurückgegeben, damit der Abfrage-Thread weiterläuft.
         """
         with self._lock:
+            # Abgelehnte Anmeldung: nicht still liegen bleiben, sondern es in
+            # wachsendem Abstand selbst wieder versuchen.
+            if self.state == STATE_ERROR and self.username:
+                self._sitzung_erneuern()
             if self.state != STATE_READY or not self._api:
                 return []
             if time.time() < self.throttled_until:
@@ -302,11 +331,19 @@ class AppleAccount:
                 else:
                     events.add("event.poll_failed", "error",
                                reason=_klartext(err))
+                    self._pause_nach_fehler()
                 return []
             except Exception as err:  # noqa: BLE001 – der Thread muss leben
-                events.add("event.poll_failed", "error", reason=_klartext(err))
+                if any(m in str(err).lower() for m in SITZUNG_ABGELAUFEN):
+                    events.add("event.session_expired", "warning")
+                    self._sitzung_erneuern()
+                else:
+                    events.add("event.poll_failed", "error",
+                               reason=_klartext(err))
+                    self._pause_nach_fehler()
                 return []
 
+            self._fehlerpause = 0
             for eintrag in geraete:
                 eintrag["account"] = self.username
             events.add("event.poll_ok", "debug", count=len(geraete),
@@ -321,15 +358,20 @@ class AppleAccount:
         verlangt, muss der Benutzer ran - und erfährt das dann auch.
         """
         jetzt = time.time()
-        if jetzt - self._letzte_wiederanmeldung < WIEDERANMELDUNG_PAUSE:
+        pause = min(WIEDERANMELDUNG_PAUSE * 2 ** self._wiederanmeldungen,
+                    WIEDERANMELDUNG_MAX_PAUSE)
+        if jetzt - self._letzte_wiederanmeldung < pause:
+            return False
+        if self._wiederanmeldungen >= WIEDERANMELDUNG_MAX_VERSUCHE:
             return False
         self._letzte_wiederanmeldung = jetzt
+        self._wiederanmeldungen += 1
 
         username, passwort = store.credentials(self.username)
         if not username or not passwort:
             # Ohne Passwort ist nichts zu machen; der Benutzer muss ran.
             self.state = STATE_TWOFACTOR
-            self._melde_codebedarf()
+            self._melde_stillstand("notify.needs_code")
             return False
 
         events.add("event.session_refresh", "warning")
@@ -342,25 +384,37 @@ class AppleAccount:
             return True
 
         if ergebnis["state"] == STATE_TWOFACTOR:
-            self._melde_codebedarf()
+            self._melde_stillstand("notify.needs_code")
         else:
             events.add("event.session_refresh_failed", "error",
                        reason=ergebnis.get("error_key") or "error.generic")
+            self._melde_stillstand("notify.login_failed")
         return False
 
-    def _melde_codebedarf(self) -> None:
+    def _pause_nach_fehler(self) -> None:
+        """Nach einer gescheiterten Abfrage mit wachsendem Abstand warten.
+
+        Ohne Pause fragte das Add-on bei einem Dauerfehler alle 15 Sekunden
+        erneut bei Apple an - am 28.10.2026 über 400-mal in zwei Stunden.
+        """
+        self._fehlerpause = min(max(self._fehlerpause * 2, FEHLERPAUSE_START),
+                                FEHLERPAUSE_MAX)
+        self.throttled_until = time.time() + self._fehlerpause
+
+    def _melde_stillstand(self, text_key: str) -> None:
         """Den Benutzer aktiv darauf hinweisen, dass nichts mehr läuft.
 
         Höchstens einmal je Stillstand: Ohne die Sperre stünde nach jedem
         Abfragezyklus ein neuer Protokolleintrag da.
         """
-        if self._codebedarf_gemeldet:
+        if self._stillstand_gemeldet:
             return
-        self._codebedarf_gemeldet = True
-        events.add("event.needs_code", "error")
+        self._stillstand_gemeldet = True
+        if text_key == "notify.needs_code":
+            events.add("event.needs_code", "error")
         lang = store.get("sprache", default="de")
         ha.melde(translator.t("notify.title", lang),
-                 translator.t("notify.needs_code", lang))
+                 translator.t(text_key, lang))
 
     # --------------------------------------------------------------- Befehle
 
