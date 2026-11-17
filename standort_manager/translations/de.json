@@ -185,6 +185,7 @@
       "device_offline": "{device} ist nicht erreichbar",
       "device_back_online": "{device} ist wieder erreichbar",
       "device_battery_low": "{device}: Akku bei {percent} %",
+      "device_id_changed": "{device}: neue Geräte-ID von Apple übernommen, Einstellungen und Entitäten bleiben",
       "poll_ok": "{count} Geräte abgefragt in {seconds} s",
       "poll_failed": "Abfrage fehlgeschlagen: {reason}",
       "poll_skipped": "Abfrage übersprungen – {reason}",

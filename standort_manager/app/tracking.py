@@ -20,6 +20,7 @@ import route
 from fahrten import fahrtenbuch
 from apple import account
 from events import events
+from mqtt_publisher import _slug
 from store import store
 
 log = logging.getLogger("standort.tracking")
@@ -179,6 +180,7 @@ class Tracker:
         if not geraete:
             return
         self.last_cycle = jetzt
+        self._folge_id_wechsel(geraete)
 
         aenderungen = []
         for roh in geraete:
@@ -209,6 +211,42 @@ class Tracker:
             # Geräteliste in der Oberfläche gefüllt wird.
             return not self.devices
         return any(d.next_poll <= jetzt for d in verfolgt)
+
+    def _folge_id_wechsel(self, geraete: list[dict]) -> None:
+        """Eingerichtete Geräte finden, denen Apple eine neue ID gab.
+
+        Beim Wechsel auf ein neues iPhone liefert Apple das Gerät unter
+        neuer ID, die alte nie wieder. Erkannt wird das an der
+        festgeschriebenen Kurzform: eine eingerichtete ID fehlt, und genau
+        ein noch nicht eingerichtetes Gerät trägt einen Namen, der dieselbe
+        Kurzform ergäbe. Dann wandert alles mit - Modus, Companion-Tracker,
+        Bezugszone und vor allem die Kurzform, damit die Entitäten in Home
+        Assistant dieselben bleiben.
+        """
+        geliefert = {roh["id"]: roh for roh in geraete}
+        slugs = store.get("entity_slugs", default={}) or {}
+        eingerichtet = store.get("geraete", default={}) or {}
+
+        def aktiv(did):
+            return (eingerichtet.get(did) or {}).get("modus", "inactive") != "inactive"
+
+        for alt, kurz in list(slugs.items()):
+            if alt in geliefert or not aktiv(alt):
+                continue
+            kandidaten = [
+                did for did, roh in geliefert.items()
+                if did not in slugs and not aktiv(did)
+                and _slug(roh.get("name") or "") == kurz
+            ]
+            if len(kandidaten) != 1:
+                continue
+            neu = kandidaten[0]
+            store.move_device(alt, neu)
+            with self._lock:
+                self.devices.pop(alt, None)
+            log.info("Neue Apple-Geräte-ID für %s übernommen", kurz)
+            events.add("event.device_id_changed", "info",
+                       device_id=neu, device=geliefert[neu].get("name"))
 
     # -------------------------------------------------------------- Quellen
 

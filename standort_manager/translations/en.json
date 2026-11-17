@@ -185,6 +185,7 @@
       "device_offline": "{device} is unreachable",
       "device_back_online": "{device} is reachable again",
       "device_battery_low": "{device}: battery at {percent} %",
+      "device_id_changed": "{device}: adopted new device ID from Apple, settings and entities kept",
       "poll_ok": "Polled {count} devices in {seconds} s",
       "poll_failed": "Poll failed: {reason}",
       "poll_skipped": "Poll skipped – {reason}",

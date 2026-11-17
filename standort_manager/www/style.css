@@ -182,6 +182,9 @@ input[type="number"], select {
 }
 
 .kachel {
+  /* Ohne min-width: 0 wächst eine Rasterzelle mit unteilbarem Inhalt
+     (Apples Base64-Geräte-ID) über ihre Spalte hinaus. */
+  min-width: 0;
   background: var(--grund);
   border: 1px solid var(--rahmen);
   border-left: 4px solid var(--text-still);
@@ -200,7 +203,7 @@ input[type="number"], select {
   align-items: baseline;
   gap: 8px;
 }
-.kachel-name { font-weight: 500; font-size: 16px; }
+.kachel-name { font-weight: 500; font-size: 16px; min-width: 0; overflow-wrap: anywhere; }
 .akku { font-size: 12px; color: var(--text-still); }
 .akku-schwach { color: var(--rot); }
 
@@ -211,10 +214,13 @@ input[type="number"], select {
 .wert-zeile {
   display: flex;
   justify-content: space-between;
+  gap: 8px;
   font-size: 13px;
   padding: 2px 0;
 }
 .wert-name { color: var(--text-still); }
+/* Lange Zonennamen umbrechen links - nicht '13' und 'km' rechts. */
+.wert { white-space: nowrap; text-align: right; }
 
 .kachel-fuss {
   display: flex;

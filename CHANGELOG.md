@@ -1,5 +1,26 @@
 # Änderungsverlauf
 
+## 0.6.2 – 17.11.2026
+
+**Ein neues iPhone verliert seine Einstellungen nicht mehr.**
+
+Wer per Backup auf ein neues iPhone umzieht, behält den Gerätenamen — Apple
+aber vergibt eine neue Geräte-ID. Alles Eingerichtete hing an der alten: Die
+Übersicht zeigte eine Kachel mit einem langen Base64-Block, „zuletzt gesehen:
+nie“, und das neue Gerät stand unbeachtet auf „Inaktiv“. Geortet wurde es
+nicht mehr.
+
+* Das Add-on erkennt den Wechsel jetzt selbst: Fehlt eine eingerichtete ID
+  und trägt genau ein noch nicht eingerichtetes Gerät denselben Namen, wandern
+  Modus, Companion-Tracker, Bezugszone und die Kurzform der Entitäten mit.
+  Die Entitäten in Home Assistant bleiben dieselben, Automationen laufen
+  weiter. Im Protokoll steht ein Eintrag dazu.
+* Gibt es zwei Kandidaten gleichen Namens, passiert nichts — lieber von Hand
+  zuordnen als falsch raten.
+* Übersicht: Ein überlanger Gerätename sprengt die Kachel nicht mehr, und ein
+  Wert wie „13 km“ wird nicht mehr zwischen Zahl und Einheit umbrochen, wenn
+  der Zonenname lang ist.
+
 ## 0.6.0 / 0.6.1 – 17.09.2026
 
 **Eine abgelaufene Apple-Sitzung repariert sich jetzt selbst.**

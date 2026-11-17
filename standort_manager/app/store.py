@@ -231,6 +231,20 @@ class Store:
                     eintrag[key] = value
         self.save()
 
+    def move_device(self, alt: str, neu: str) -> None:
+        """Einstellungen und Kurzform von einer Geräte-ID auf eine neue.
+
+        Apple vergibt einem Gerät manchmal eine neue ID - etwa nach dem
+        Umzug auf ein neues iPhone per Backup. Ohne Umzug hinge alles
+        Eingerichtete an einer ID, die nie wieder geliefert wird.
+        """
+        with self._lock:
+            for bereich in ("geraete", "entity_slugs"):
+                daten = self._data.setdefault(bereich, {})
+                if alt in daten:
+                    daten[neu] = daten.pop(alt)
+        self.save()
+
 
 def _merge(base: dict, override: dict) -> dict:
     """Vorgaben mit gespeicherten Werten überlagern, verschachtelt.
