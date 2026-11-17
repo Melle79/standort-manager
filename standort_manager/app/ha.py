@@ -228,10 +228,30 @@ def melde(titel: str, text: str, kennung: str = "standort_manager") -> bool:
             timeout=TIMEOUT,
         )
         _aufs_handy(titel, text)
+        _reparatur(titel, text, kennung)
         return resp.ok
     except requests.RequestException as err:
         log.warning("Benachrichtigung nicht zustellbar: %s", err)
         return False
+
+
+def _reparatur(titel: str, text: str, kennung: str) -> None:
+    """Zusätzlich eine Reparaturmeldung, falls Spook installiert ist.
+
+    Ein Add-on kann selbst keine Reparatur anlegen, nur Integrationen.
+    Spook stellt dafür die Aktion repairs.create bereit. Ohne Spook
+    antwortet HA mit einem Fehler - das ist kein Problem, dann bleibt es
+    bei Glocke und Handy.
+    """
+    try:
+        requests.post(
+            f"{CORE_API}/services/repairs/create", headers=_headers(),
+            json={"issue_id": kennung, "title": titel, "description": text,
+                  "severity": "error", "persistent": True},
+            timeout=TIMEOUT,
+        )
+    except requests.RequestException as err:
+        log.debug("Reparaturmeldung nicht möglich: %s", err)
 
 
 def _aufs_handy(titel: str, text: str) -> None:
@@ -279,6 +299,11 @@ def meldung_zuruecknehmen(kennung: str = "standort_manager") -> None:
         requests.post(
             f"{CORE_API}/services/persistent_notification/dismiss",
             headers=_headers(), json={"notification_id": kennung},
+            timeout=TIMEOUT,
+        )
+        requests.post(
+            f"{CORE_API}/services/repairs/remove",
+            headers=_headers(), json={"issue_id": kennung},
             timeout=TIMEOUT,
         )
     except requests.RequestException:

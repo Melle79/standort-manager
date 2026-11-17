@@ -211,8 +211,10 @@ class AppleAccount:
             self.state = STATE_READY
             self.error_key = None
             self._wiederanmeldungen = 0
-            if self._stillstand_gemeldet:
-                ha.meldung_zuruecknehmen()
+            # Immer aufräumen, nicht nur nach eigener Meldung: Die
+            # Reparaturmeldung überlebt einen Neustart, das Wissen um sie
+            # im Add-on nicht.
+            ha.meldung_zuruecknehmen()
             self._stillstand_gemeldet = False
             store.set_credentials(username, password if store_password else None)
             events.add("event.login_ok", "info", user=username)

@@ -138,6 +138,14 @@ ha.melde("T", "x")
 if not any(u.endswith("/notify/mobile_app_handy") for u in gesendet):
     fehler.append("Handy-Meldung an gewählten Dienst fehlt")
 
+# 8. Reparaturmeldung über Spook - und beim Zurücknehmen wieder weg.
+if not any(u.endswith("/services/repairs/create") for u in gesendet):
+    fehler.append("Reparaturmeldung (repairs.create) fehlt")
+gesendet.clear()
+ha.meldung_zuruecknehmen()
+if not any(u.endswith("/services/repairs/remove") for u in gesendet):
+    fehler.append("Reparaturmeldung wird nicht entfernt")
+
 if fehler:
     print("FEHLER:"); [print("  -", f) for f in fehler]; sys.exit(1)
 print("Abgelehnte Anmeldung: alle Erwartungen erfüllt.")

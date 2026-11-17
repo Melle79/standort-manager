@@ -1,5 +1,19 @@
 # Änderungsverlauf
 
+## 0.6.5 – 17.11.2026
+
+**Stillstand auch als Reparaturmeldung — wenn Spook installiert ist.**
+
+Ein Add-on kann selbst keine Reparatur in Home Assistant anlegen, das können
+nur Integrationen. Die Integration [Spook](https://spook.boo) stellt dafür
+aber die Aktion `repairs.create` bereit.
+
+* Lehnt Apple die Anmeldung ab oder verlangt einen Code, erscheint die Meldung
+  jetzt zusätzlich unter *Einstellungen → Reparaturen*. Ohne Spook bleibt es
+  bei Glocke und — falls gewählt — Handy.
+* Sobald die Anmeldung wieder klappt, verschwinden Reparatur und Meldung von
+  selbst, auch über einen Neustart des Add-ons hinweg.
+
 ## 0.6.4 – 17.11.2026
 
 **Als Companion-Tracker stehen nur noch Geräte mit der Home-Assistant-App zur
