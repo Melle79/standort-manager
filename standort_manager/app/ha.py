@@ -4,6 +4,7 @@ Wird für zwei Dinge gebraucht: die Zonen (damit Zonen nicht doppelt gepflegt
 werden müssen) und die Tracker der Companion-App als zweite Standortquelle.
 """
 
+import json
 import logging
 import os
 import time
@@ -124,15 +125,44 @@ def _core_config() -> dict | None:
         return None
 
 
+def _companion_entitaeten() -> set[str] | None:
+    """Entitäten der Companion-App (Integration mobile_app).
+
+    Die REST-API kennt keine Entitätsregistrierung; die Template-API kann
+    aber nach Integration fragen. None heißt: nicht ermittelbar.
+    """
+    try:
+        resp = requests.post(
+            f"{CORE_API}/template", headers=_headers(), timeout=TIMEOUT,
+            json={"template": "{{ integration_entities('mobile_app') | tojson }}"},
+        )
+        resp.raise_for_status()
+        return set(json.loads(resp.text))
+    except (requests.RequestException, ValueError) as err:
+        log.warning("Companion-Entitäten nicht ermittelbar: %s", err)
+        return None
+
+
 def device_trackers() -> list:
-    """Alle device_tracker-Entitäten – zur Auswahl der Companion-Quelle."""
+    """Tracker der Companion-App – zur Auswahl der Companion-Quelle.
+
+    Früher standen hier alle device_tracker: iBeacons, Router-Tracker,
+    Steckdosen. Nur die App liefert aber GPS-Standorte, die etwas taugen.
+    """
     alle = states() or []
+    companion = _companion_entitaeten()
     out = []
     for entry in alle:
         eid = entry.get("entity_id", "")
         if not eid.startswith("device_tracker."):
             continue
         attrs = entry.get("attributes", {})
+        if companion is not None:
+            if eid not in companion:
+                continue
+        elif attrs.get("source_type") != "gps":
+            # Notbehelf, wenn HA die Integration nicht verrät.
+            continue
         # Eigene Entitäten nicht als Quelle anbieten – das gäbe eine Schleife.
         if attrs.get("attribution") == "Standort-Manager":
             continue

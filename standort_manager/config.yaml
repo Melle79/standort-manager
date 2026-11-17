@@ -1,5 +1,5 @@
 name: Standort-Manager
-version: "0.6.3"
+version: "0.6.4"
 slug: standort_manager
 description: Standortverfolgung für Apple-Geräte mit eigener Oberfläche, Zonen, Adressauflösung und Ankunftszeiten
 url: https://github.com/Melle79/standort-manager

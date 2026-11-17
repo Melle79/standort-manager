@@ -432,8 +432,21 @@ async function zeichneGeraete() {
     const leer = el('option', null, I18n.t('common.none'));
     leer.value = '';
     companionWahl.appendChild(leer);
-    for (const tracker of Zustand.tracker) {
-      const option = el('option', null, tracker.name);
+    // Ein gespeicherter Tracker bleibt sichtbar, auch wenn er nicht mehr
+    // zur Companion-App gehört - sonst zeigte die Auswahl "keine", während
+    // im Hintergrund weiter ein Tracker eingetragen ist.
+    const trackerListe = [...Zustand.tracker];
+    const gespeichert = geraet.config.companion_entity;
+    if (gespeichert && !trackerListe.some((t) => t.entity_id === gespeichert)) {
+      trackerListe.push({ entity_id: gespeichert, name: gespeichert });
+    }
+    for (const tracker of trackerListe) {
+      // Mit Entitäts-ID: Nach einem Handywechsel heißen alte und neue
+      // App-Anmeldung fast gleich ("Svens iPhone" / "Svens iPhone 2").
+      const kurz = tracker.entity_id.replace(/^device_tracker\./, '');
+      const option = el('option', null,
+        tracker.name === tracker.entity_id ? tracker.entity_id
+          : `${tracker.name} (${kurz})`);
       option.value = tracker.entity_id;
       if (geraet.config.companion_entity === tracker.entity_id) {
         option.selected = true;

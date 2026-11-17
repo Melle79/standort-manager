@@ -1,5 +1,22 @@
 # Änderungsverlauf
 
+## 0.6.4 – 17.11.2026
+
+**Als Companion-Tracker stehen nur noch Geräte mit der Home-Assistant-App zur
+Wahl.**
+
+Bisher bot die Auswahl jeden `device_tracker` an — iBeacons, Router-Tracker,
+Shelly-Relais, Steckdosen. Standorte, mit denen sich etwas anfangen lässt,
+liefert aber nur die Companion-App.
+
+* Angeboten werden nur noch Entitäten der Integration `mobile_app`. Kann Home
+  Assistant das nicht beantworten, wenigstens nur GPS-Tracker.
+* Hinter jedem Namen steht die Entitäts-ID. Nach einem Handywechsel heißen
+  alte und neue App-Anmeldung fast gleich („iPhone“ und „iPhone 2“), und nur
+  die ID unterscheidet sie.
+* Ein bereits gespeicherter Tracker bleibt sichtbar, auch wenn er nicht mehr
+  zur App gehört, statt dass die Auswahl fälschlich „keine“ zeigt.
+
 ## 0.6.3 – 17.11.2026
 
 **Fällt die Apple-Anmeldung aus, erfährt man es jetzt.**
