@@ -442,7 +442,7 @@ async function zeichneGeraete() {
     }
     for (const tracker of trackerListe) {
       // Mit Entitäts-ID: Nach einem Handywechsel heißen alte und neue
-      // App-Anmeldung fast gleich ("Svens iPhone" / "Svens iPhone 2").
+      // App-Anmeldung fast gleich ("iPhone" / "iPhone 2").
       const kurz = tracker.entity_id.replace(/^device_tracker\./, '');
       const option = el('option', null,
         tracker.name === tracker.entity_id ? tracker.entity_id
